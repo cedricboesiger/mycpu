@@ -1,3 +1,3 @@
 # MyCPU
-a risc v self made emulator, [see:](https://book.rvemu.app/)
+a riscv self made emulator according to the instructions of [rvemu from scratch in 10 steps](https://book.rvemu.app/)
 
