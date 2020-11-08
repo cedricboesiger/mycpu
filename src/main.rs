@@ -82,7 +82,7 @@ impl Cpu {
         let rs1 = ((inst & 0x000f8000) >> 15) as usize;
         let rs2 = ((inst & 0x01f00000) >> 20) as usize;
 
-	match opcode {
+        match opcode {
             0x13 => {
                 // addi
                 let imm = ((inst & 0xfff00000) as i32 as i64 >> 20) as u64;
@@ -100,7 +100,7 @@ impl Cpu {
 }
 
 fn main() -> io::Result<()> {
-    
+
     let args: Vec<String> = env::args().collect();
 
     if args.len() != 2 {
