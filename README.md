@@ -2,8 +2,6 @@
 a riscv emulator implemented in go.
 it is inspired by the rvemu project, written in rust: [rvemu from scratch in 10 steps](https://book.rvemu.app/)
 
-for further todo's see: [TODOs](./TODO.md)
-
 # v0.1.0 (rust)
 Implemented STEP 1, it decodes and executes `add` and `addi` according to rv32i
 
