@@ -1,4 +1,4 @@
-# rvonk8s
+# rvsim a Risc-V simulator
 a riscv emulator implemented in go.
 it is inspired by the rvemu project, written in rust: [rvemu from scratch in 10 steps](https://book.rvemu.app/)
 
