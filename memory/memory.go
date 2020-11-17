@@ -1,23 +1,26 @@
 package memory
 
+import (
+	"fmt"
+)
+
 const debug bool = false
 
-//MemorySize defines the  memory size for the cpu
-const memorySize uint64 = 1024 * 1024 * 128
-
-//Register holds all registers of the cpu
-type memory struct {
-	//Add memory here for simplicity
-	//memory []uint8
-	memory uint64
+//Memory defining the data section which will contain the radius and height variables .
+type Memory struct {
+	dram uint64
 }
 
-var mem memory
+// Using the methods here
+// tankDimension interface
 
-func (m *memory) Load() uint64        { return mem.memory }
-func (m *memory) Store(binary uint64) { mem.memory = binary }
+//Load value
+func (m Memory) Load() uint64 {
+	return m.dram
+}
 
-//Initialize the Memory
-//func Initialize(binary []uint8) {
-//	mem.memory = binary
-//}
+//Store value
+func (m *Memory) Store(binary uint64) {
+	fmt.Println("store:", binary)
+	m.dram = binary
+}
