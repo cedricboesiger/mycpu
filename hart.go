@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"rvonk8s/cpu"
+	"rvsim/cpu"
 )
 
 const debug bool = false

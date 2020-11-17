@@ -1,3 +1,3 @@
-module rvonk8s
+module rvsim
 
 go 1.15

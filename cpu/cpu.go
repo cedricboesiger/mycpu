@@ -93,6 +93,10 @@ func Execute(instruction uint64) error {
 	rs2 := uint((instruction & 0x01f00000) >> 20)
 
 	switch opcode {
+	case 0x03:
+		//imm[11:0], inst[31:20]
+		//imm := uint64((instruction & 0xfff00000) >> 20)
+
 	//R-Type
 	case 0x13:
 		//addi
