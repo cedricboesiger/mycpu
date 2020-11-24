@@ -3,6 +3,8 @@ package cpu
 import (
 	"errors"
 	"fmt"
+	"rvsim/bus"
+	"rvsim/memory"
 )
 
 const debug bool = false
@@ -18,15 +20,19 @@ type register struct {
 	pc uint64
 	//Add memory here for simplicity
 	memory []uint8
+	ram    bus.Device
 }
 
 var cpu register
 
 //Initialize the cpu
 func Initialize(binary []uint8) {
+	//	var ram bus.Device
+	cpu.ram = &memory.Memory{}
+	cpu.ram.Store(binary)
 	cpu.regs[2] = memorySize
 	cpu.pc = 0
-	cpu.memory = binary
+	cpu.memory = cpu.ram.Load()
 
 }
 
