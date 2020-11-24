@@ -3,16 +3,13 @@ package ram
 import (
 	"errors"
 	"fmt"
+	"rvsim/bus"
 )
 
 const debug bool = true
 
 //MemorySize defines the  memory size for the cpu
 const MemorySize uint64 = 1024 * 1024 * 128
-
-//MemoryBase where memory starts, same as QEMU vm
-//const MemoryBase uint64 = 0x8000_0000
-const MemoryBase uint64 = 0
 
 //RAM defining the data section which will contain the radius and height variables .
 type RAM struct {
@@ -24,6 +21,7 @@ type RAM struct {
 
 //Load value
 func (r *RAM) Load(addr uint64, size uint64) (uint64, error) {
+	//	addr = addr + bus.MemoryBase
 	switch size {
 	case 8:
 		return r.load8(addr), nil
@@ -42,6 +40,7 @@ func (r *RAM) Load(addr uint64, size uint64) (uint64, error) {
 
 //Store value
 func (r *RAM) Store(addr uint64, size uint64, value uint64) error {
+	//	addr = addr + bus.MemoryBase
 	if debug {
 		fmt.Println("RAM Store addr, size, value ", addr, size, value)
 	}
@@ -67,22 +66,22 @@ func (r *RAM) Store(addr uint64, size uint64, value uint64) error {
 }
 
 func (r *RAM) load8(addr uint64) uint64 {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	return uint64(r.dram[index])
 }
 
 func (r *RAM) load16(addr uint64) uint64 {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	return (uint64(r.dram[index]) | (uint64(r.dram[index+1]) << 8))
 }
 
 func (r *RAM) load32(addr uint64) uint64 {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	return (uint64(r.dram[index]) | (uint64(r.dram[index+1]) << 8) | (uint64(r.dram[index+2]) << 16) | (uint64(r.dram[index+3]) << 24))
 }
 
 func (r *RAM) load64(addr uint64) uint64 {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	return (uint64(r.dram[index]) | (uint64(r.dram[index+1]) << 8) | (uint64(r.dram[index+2]) << 16) | (uint64(r.dram[index+3]) << 24) | (uint64(r.dram[index+4]) << 32) | (uint64(r.dram[index+5]) << 40) | (uint64(r.dram[index+6]) << 48) | (uint64(r.dram[index+7]) << 56))
 }
 
@@ -90,7 +89,7 @@ func (r *RAM) store8(addr uint64, value uint64) {
 	if debug {
 		fmt.Println("RAM Store8 addr, value ", addr, value)
 	}
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 
 	if debug {
 		fmt.Println("RAM Store8 index ", index)
@@ -99,13 +98,13 @@ func (r *RAM) store8(addr uint64, value uint64) {
 }
 
 func (r *RAM) store16(addr uint64, value uint64) {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	r.dram[index] = uint8(((value) & 0xff))
 	r.dram[index+1] = uint8(((value >> 8) & 0xff))
 }
 
 func (r *RAM) store32(addr uint64, value uint64) {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	r.dram[index] = uint8(((value) & 0xff))
 	r.dram[index+1] = uint8(((value >> 8) & 0xff))
 	r.dram[index+2] = uint8(((value >> 16) & 0xff))
@@ -113,7 +112,7 @@ func (r *RAM) store32(addr uint64, value uint64) {
 }
 
 func (r *RAM) store64(addr uint64, value uint64) {
-	var index uint = uint(addr - MemoryBase)
+	var index uint = uint(addr - bus.MemoryBase)
 	r.dram[index] = uint8(((value) & 0xff))
 	r.dram[index+1] = uint8(((value >> 8) & 0xff))
 	r.dram[index+2] = uint8(((value >> 16) & 0xff))

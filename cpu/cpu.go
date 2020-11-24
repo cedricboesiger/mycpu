@@ -30,11 +30,11 @@ func Initialize(binary []uint8) {
 	cpu.pc = 0
 
 	cpu.ram = &ram.RAM{}
-	for i := 0; i <= len(binary)-1; i++ {
+	for i := 0 + bus.MemoryBase; i <= uint64(len(binary))+(bus.MemoryBase-1); i++ {
 		if debug {
 			fmt.Println("CPU Store index ", i)
 		}
-		err := cpu.ram.Store(uint64(i), 8, uint64(binary[i]))
+		err := cpu.ram.Store(uint64(i), 8, uint64(binary[i-bus.MemoryBase]))
 		if err != nil {
 			fmt.Println("PANIC: could not store memory")
 			break
@@ -86,7 +86,7 @@ func Fetch() uint64 {
 func read32(addr uint64) uint64 {
 
 	//Shift bits to little-endian order
-	value, err := cpu.ram.Load(addr, 32)
+	value, err := cpu.ram.Load(addr+bus.MemoryBase, 32)
 	if err != nil {
 		fmt.Println("Error read32 from ram")
 	}
