@@ -5,8 +5,8 @@ const debug bool = false
 //Device for the bus need to implement load and store
 type Device interface {
 	// Methods signature with data types of the methods .
-	Load() []uint8
-	Store([]uint8)
+	Load(uint64, uint64) (uint64, error)
+	Store(uint64, uint64, uint64) error
 }
 
 ////Memory defining the data section which will contain the radius and height variables .

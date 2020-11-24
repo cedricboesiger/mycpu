@@ -4,13 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"rvsim/bus"
-	"rvsim/memory"
+	"rvsim/ram"
 )
 
-const debug bool = false
-
-//MemorySize defines the  memory size for the cpu
-const memorySize uint64 = 1024 * 1024 * 128
+const debug bool = true
 
 //Register holds all registers of the cpu
 type register struct {
@@ -19,8 +16,7 @@ type register struct {
 	//one Program Counter
 	pc uint64
 	//Add memory here for simplicity
-	memory []uint8
-	ram    bus.Device
+	ram bus.Device
 }
 
 var cpu register
@@ -28,11 +24,22 @@ var cpu register
 //Initialize the cpu
 func Initialize(binary []uint8) {
 	//	var ram bus.Device
-	cpu.ram = &memory.Memory{}
-	cpu.ram.Store(binary)
-	cpu.regs[2] = memorySize
+	cpu.ram = &ram.RAM{}
+
+	cpu.regs[2] = ram.MemorySize
 	cpu.pc = 0
-	cpu.memory = cpu.ram.Load()
+
+	cpu.ram = &ram.RAM{}
+	for i := 0; i <= len(binary)-1; i++ {
+		if debug {
+			fmt.Println("CPU Store index ", i)
+		}
+		err := cpu.ram.Store(uint64(i), 8, uint64(binary[i]))
+		if err != nil {
+			fmt.Println("PANIC: could not store memory")
+			break
+		}
+	}
 
 }
 
@@ -67,25 +74,23 @@ func SetPC(newPC uint64) {
 	cpu.pc = newPC
 }
 
-//GetMemory return memory as array
-func GetMemory() []uint8 {
-	return cpu.memory
-}
-
 //Fetch cycle
 func Fetch() uint64 {
 	if debug {
-		fmt.Println("DEBUG Fetch cpu.pc", cpu.pc)
+		fmt.Println("CPU DEBUG Fetch cpu.pc", cpu.pc)
 	}
 	return uint64(read32(cpu.pc))
 }
 
 //read32 for 32 bit code
 func read32(addr uint64) uint64 {
-	index := uint(addr)
 
 	//Shift bits to little-endian order
-	return (uint64(cpu.memory[index]) | (uint64(cpu.memory[index+1]) << 8) | (uint64(cpu.memory[index+2]) << 16) | (uint64(cpu.memory[index+3]) << 24))
+	value, err := cpu.ram.Load(addr, 32)
+	if err != nil {
+		fmt.Println("Error read32 from ram")
+	}
+	return value
 }
 
 //Execute executes an instruction defined by its memory address

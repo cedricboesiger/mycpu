@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"rvsim/cpu"
+	"rvsim/ram"
 )
 
 const debug bool = false
@@ -20,21 +21,21 @@ func main() {
 	}
 
 	if debug {
-		fmt.Println("DUMP, ", data)
+		fmt.Println("HART DUMP, ", data)
 	}
 	//Initialize an fresh and empty cpu
 	cpu.Initialize(data)
 
 	//the fetch/decode/execute cycles
 	for {
-		if cpu.GetPC() > uint64(len(cpu.GetMemory())-1) {
+		if cpu.GetPC() > uint64(ram.MemorySize) {
 			if debug {
-				fmt.Println("BREAK, len(memory) cpu.pc", uint64(len(cpu.GetMemory())), cpu.GetPC())
+				fmt.Println("HART BREAK, MemorySize cpu.pc", uint64(ram.MemorySize), cpu.GetPC())
 			}
 			break
 		}
 		if debug {
-			fmt.Println("DEBUG, len(memory) cpu.pc", uint64(len(cpu.GetMemory())), cpu.GetPC())
+			fmt.Println("HART DEBUG, MemorySize cpu.pc", uint64(ram.MemorySize), cpu.GetPC())
 		}
 
 		//Fetch
