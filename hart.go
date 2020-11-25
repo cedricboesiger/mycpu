@@ -4,11 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
+	"rvsim/bus"
 	"rvsim/cpu"
 	"rvsim/ram"
 )
 
-const debug bool = false
+const debug bool = true
 
 func main() {
 
@@ -28,7 +29,7 @@ func main() {
 
 	//the fetch/decode/execute cycles
 	for {
-		if cpu.GetPC() > uint64(ram.MemorySize) {
+		if cpu.GetPC() > uint64(ram.MemorySize+bus.MemoryBase) {
 			if debug {
 				fmt.Println("HART BREAK, MemorySize cpu.pc", uint64(ram.MemorySize), cpu.GetPC())
 			}
@@ -45,6 +46,11 @@ func main() {
 		//Decode / Execute
 		err := cpu.Execute(inst)
 
+		if cpu.GetPC() == bus.MemoryBase {
+			if debug {
+				fmt.Println("HART BREAK: PC == 0")
+			}
+		}
 		if err != nil {
 			fmt.Println("PANIC: ", err)
 			break
