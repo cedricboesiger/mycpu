@@ -3,8 +3,9 @@ package bus
 const debug bool = false
 
 //MemoryBase set base addr for memroy, like QEMU vm
-//const MemoryBase uint64 = 0x8000_0000
-const MemoryBase uint64 = 0x0
+const MemoryBase uint64 = 0x8000_0000
+
+//const MemoryBase uint64 = 0x0
 
 //const MemoryBase uint64 = 0
 

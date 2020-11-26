@@ -20,9 +20,11 @@ type register struct {
 }
 
 var cpu register
+var prglength uint64
 
 //Initialize the cpu
 func Initialize(binary []uint8) {
+	prglength = uint64(len(binary))
 	//	var ram bus.Device
 	cpu.ram = &ram.RAM{}
 
@@ -67,7 +69,11 @@ func GetPC() uint64 {
 
 //IncPC used for jump instructions
 func IncPC() {
-	cpu.pc += 4
+	if (cpu.pc - bus.MemoryBase) >= prglength {
+		cpu.pc = 0
+	} else {
+		cpu.pc += 4
+	}
 }
 
 //SetPC used for jump instructions
