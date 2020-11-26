@@ -114,15 +114,15 @@ func Execute(instruction uint64) error {
 		case 0x0:
 			//lb load byte
 			val, _ := cpu.ram.Load(addr, 8)
-			cpu.regs[rd] = uint64(val)
+			cpu.regs[rd] = uint64(int64(int8((val))))
 		case 0x1:
 			//lh load half word
 			val, _ := cpu.ram.Load(addr, 16)
-			cpu.regs[rd] = uint64(val)
+			cpu.regs[rd] = uint64(int64(int16(val)))
 		case 0x2:
 			//lw load word
 			val, _ := cpu.ram.Load(addr, 32)
-			cpu.regs[rd] = uint64(val)
+			cpu.regs[rd] = uint64(int64(int32(val)))
 		case 0x3:
 			//ld load double word
 			val, _ := cpu.ram.Load(addr, 64)
