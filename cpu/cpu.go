@@ -102,11 +102,50 @@ func Execute(instruction uint64) error {
 	rd := uint((instruction & 0x00000f80) >> 7)
 	rs1 := uint((instruction & 0x000f8000) >> 15)
 	rs2 := uint((instruction & 0x01f00000) >> 20)
+	funct3 := uint((instruction & 0x00007000) >> 12)
 
 	switch opcode {
 	case 0x03:
 		//imm[11:0], inst[31:20]
+		imm := uint64((instruction) >> 20)
+		addr := cpu.regs[rs1] + imm
 		//imm := uint64((instruction & 0xfff00000) >> 20)
+		switch funct3 {
+		case 0x0:
+			//lb load byte
+			val, _ := cpu.ram.Load(addr, 8)
+			cpu.regs[rd] = uint64(val)
+		case 0x1:
+			//lh load half word
+			val, _ := cpu.ram.Load(addr, 16)
+			cpu.regs[rd] = uint64(val)
+		case 0x2:
+			//lw load word
+			val, _ := cpu.ram.Load(addr, 32)
+			cpu.regs[rd] = uint64(val)
+		case 0x3:
+			//ld load double word
+			val, _ := cpu.ram.Load(addr, 64)
+			cpu.regs[rd] = uint64(val)
+		case 0x4:
+			//lbu load byte
+			val, _ := cpu.ram.Load(addr, 8)
+			cpu.regs[rd] = val
+		case 0x5:
+			//lhu load half word
+			val, _ := cpu.ram.Load(addr, 16)
+			cpu.regs[rd] = val
+		case 0x6:
+			//lwh load word
+			val, _ := cpu.ram.Load(addr, 32)
+			cpu.regs[rd] = val
+		case 0x7:
+			//ldu load double word
+			val, _ := cpu.ram.Load(addr, 64)
+			cpu.regs[rd] = val
+		default:
+			return errors.New("Could not execute funct3 of instruction ")
+		}
 
 	//R-Type
 	case 0x13:
