@@ -22,6 +22,9 @@ type RAM struct {
 //Load value
 func (r *RAM) Load(addr uint64, size uint64) (uint64, error) {
 	//	addr = addr + bus.MemoryBase
+	if addr < bus.MemoryBase {
+		return 0, errors.New("Segmentation Fault")
+	}
 	switch size {
 	case 8:
 		return r.load8(addr), nil
@@ -42,7 +45,10 @@ func (r *RAM) Load(addr uint64, size uint64) (uint64, error) {
 func (r *RAM) Store(addr uint64, size uint64, value uint64) error {
 	//	addr = addr + bus.MemoryBase
 	if debug {
-		fmt.Println("RAM Store addr, size, value ", addr, size, value)
+		fmt.Println("RAM Store MemoryBase, addr, size, value ", bus.MemoryBase, addr, size, value)
+	}
+	if addr < bus.MemoryBase {
+		return errors.New("Segmentation Fault")
 	}
 	switch size {
 	case uint64(8):

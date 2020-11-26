@@ -7,7 +7,7 @@ import (
 	"rvsim/ram"
 )
 
-const debug bool = true
+const debug bool = false
 
 //Register holds all registers of the cpu
 type register struct {
@@ -32,6 +32,9 @@ func Initialize(binary []uint8) {
 	cpu.regs[2] = bus.MemoryBase + ram.MemorySize
 	cpu.pc = bus.MemoryBase
 
+	if debug {
+		fmt.Println("CPU Store Program to Memory")
+	}
 	cpu.ram = &ram.RAM{}
 	for i := 0; i <= len(binary)-1; i++ {
 		if debug {
@@ -82,25 +85,12 @@ func SetPC(newPC uint64) {
 }
 
 //Fetch cycle
-func Fetch() uint64 {
+func Fetch() (uint64, error) {
 	if debug {
 		fmt.Println("CPU DEBUG Fetch cpu.pc", cpu.pc)
 	}
-	return uint64(read32(cpu.pc))
-}
-
-//read32 for 32 bit code
-func read32(addr uint64) uint64 {
-
-	//Shift bits to little-endian order
-	if debug {
-		fmt.Println("CPU DEBUG Read addr", cpu.pc)
-	}
-	value, err := cpu.ram.Load(addr, 32)
-	if err != nil {
-		fmt.Println("Error read32 from ram")
-	}
-	return value
+	value, err := cpu.ram.Load(cpu.pc, 32)
+	return value, err
 }
 
 //Execute executes an instruction defined by its memory address

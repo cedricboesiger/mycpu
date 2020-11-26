@@ -29,7 +29,12 @@ func main() {
 	for {
 
 		//Fetch
-		inst := cpu.Fetch()
+		inst, err := cpu.Fetch()
+		if err != nil {
+			fmt.Println("Error Fetch inst from ram")
+			break
+		}
+
 		cpu.IncPC()
 		if debug {
 			fmt.Println("HART cpu.pc, ", cpu.GetPC())
@@ -43,7 +48,7 @@ func main() {
 			break
 		}
 		//Decode / Execute
-		err := cpu.Execute(inst)
+		err = cpu.Execute(inst)
 
 		if err != nil {
 			fmt.Println("PANIC: ", err)
