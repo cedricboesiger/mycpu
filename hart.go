@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"rvsim/cpu"
+	"time"
 )
 
 const debug bool = true
@@ -25,6 +26,9 @@ func main() {
 	//Initialize an fresh and empty cpu
 	cpu.Initialize(data)
 
+	//Figure execution Hz
+	start := time.Now()
+	cycle := 0
 	//the fetch/decode/execute cycles
 	for {
 
@@ -54,8 +58,10 @@ func main() {
 			fmt.Println("PANIC: ", err)
 			break
 		}
+		cycle++
 	}
-
+	fmt.Printf("CPU speed %.1f kHz", float64(cycle)/time.Since(start).Seconds()/1000)
+	fmt.Println()
 	//Show all registers
 	cpu.DumpRegisters()
 }
