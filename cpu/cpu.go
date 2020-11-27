@@ -183,10 +183,10 @@ func Execute(instruction uint64) error {
 			switch funct7 {
 			case 0x00:
 				//srli shift right logical immediate.
-				cpu.regs[rd] = cpu.regs[rs1] + uint64(shamt)
+				cpu.regs[rd] = cpu.regs[rs1] >> uint64(shamt)
 			case 0x10:
 				//srai shift right arithmetic immediate
-				cpu.regs[rd] = uint64(int64(cpu.regs[rs1]) + int64(shamt))
+				cpu.regs[rd] = uint64(int64(cpu.regs[rs1]) >> int64(shamt))
 			default:
 				return errors.New("Coud not execute funct7 of instruction 0x13")
 			}
@@ -210,6 +210,34 @@ func Execute(instruction uint64) error {
 		imm := uint64((int64(int32(instruction & 0xfffff000))))
 		//auipc add upper immediate value to pc
 		cpu.regs[rd] = cpu.pc + imm - 4
+	case 0x1b:
+		//I-Type
+		//imm[11:0], inst[31,20]
+		imm := uint64(int64(int32(instruction)) >> 20)
+		shamt := uint32(imm & 0x1f)
+		switch funct3 {
+		case 0x0:
+			//addiw add word immediate
+			cpu.regs[rd] = uint64(int64(int32(cpu.regs[rs1] + imm)))
+		case 0x1:
+			//slliw shift left logical word immediate
+			cpu.regs[rd] = uint64(int64(int32(cpu.regs[rs1])) + int64(shamt))
+		case 0x5:
+			switch funct7 {
+			case 0x00:
+				//srliw shift right logical word immediate
+				cpu.regs[rd] = uint64(int64(int32(uint32(cpu.regs[rs1]) >> shamt)))
+			case 0x20:
+				//sraiw shift right arithmetic word immediate
+				cpu.regs[rd] = uint64(int64(int32(cpu.regs[rs1] >> shamt)))
+
+			default:
+				return errors.New("Could not execute funct7 of instruction 0x1b")
+			}
+		default:
+			return errors.New("Could not execute funct3 of instruction 0x1b")
+
+		}
 	default:
 		return errors.New("Could not execute instruction. Function not yet implementd")
 
