@@ -107,6 +107,7 @@ func Execute(instruction uint64) error {
 
 	switch opcode {
 	case 0x03:
+		//I-Type
 		//imm[11:0], inst[31:20]
 		imm := uint64((int64(int32(instruction))) >> 20)
 		addr := cpu.regs[rs1] + imm // golang respects interger overflow on uint, see https://golang.org/ref/spec#Integer_overflow
@@ -147,9 +148,9 @@ func Execute(instruction uint64) error {
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x03")
 		}
-
 	case 0x13:
-		//imm[11:0], inst[31:20]
+		//I-Type
+		//imm[11:0]
 		imm := uint64((int64(int32(instruction & 0xfff00000))) >> 20)
 		//the shift amount is encoded in the lower 6 bits of imm for RV64I
 		shamt := uint32((imm & 0x3f))
@@ -200,11 +201,15 @@ func Execute(instruction uint64) error {
 			return errors.New("Could not execute funct3 of instruction 0x13")
 
 		}
-		//I-Type
 	case 0x33:
 		//add
 		cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2]
-
+	case 0x17:
+		// U-Type
+		//imm[31:12]
+		imm := uint64((int64(int32(instruction & 0xfffff000))))
+		//auipc add upper immediate value to pc
+		cpu.regs[rd] = cpu.pc + imm - 4
 	default:
 		return errors.New("Could not execute instruction. Function not yet implementd")
 
