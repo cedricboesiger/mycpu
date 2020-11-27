@@ -102,14 +102,15 @@ func Execute(instruction uint64) error {
 	rd := uint((instruction & 0x00000f80) >> 7)
 	rs1 := uint((instruction & 0x000f8000) >> 15)
 	rs2 := uint((instruction & 0x01f00000) >> 20)
-	funct3 := uint((instruction & 0x00007000) >> 12)
+	funct3 := (instruction & 0x00007000) >> 12
+	funct7 := (instruction & 0xfe000000) >> 25
 
 	switch opcode {
 	case 0x03:
 		//imm[11:0], inst[31:20]
-		imm := uint64((instruction) >> 20)
-		addr := cpu.regs[rs1] + imm
-		//imm := uint64((instruction & 0xfff00000) >> 20)
+		imm := uint64((int64(int32(instruction))) >> 20)
+		addr := cpu.regs[rs1] + imm // golang respects interger overflow on uint, see https://golang.org/ref/spec#Integer_overflow
+
 		switch funct3 {
 		case 0x0:
 			//lb load byte
@@ -128,33 +129,78 @@ func Execute(instruction uint64) error {
 			val, _ := cpu.ram.Load(addr, 64)
 			cpu.regs[rd] = uint64(val)
 		case 0x4:
-			//lbu load byte
+			//lbu load byte unsigned
 			val, _ := cpu.ram.Load(addr, 8)
 			cpu.regs[rd] = val
 		case 0x5:
-			//lhu load half word
+			//lhu load half word unsigned
 			val, _ := cpu.ram.Load(addr, 16)
 			cpu.regs[rd] = val
 		case 0x6:
-			//lwh load word
+			//lwh load word unsigned
 			val, _ := cpu.ram.Load(addr, 32)
 			cpu.regs[rd] = val
 		case 0x7:
-			//ldu load double word
+			//ldu load double word unsigned
 			val, _ := cpu.ram.Load(addr, 64)
 			cpu.regs[rd] = val
 		default:
-			return errors.New("Could not execute funct3 of instruction ")
+			return errors.New("Could not execute funct3 of instruction 0x03")
 		}
 
-	//R-Type
 	case 0x13:
-		//addi
 		//imm[11:0], inst[31:20]
-		imm := uint64((instruction & 0xfff00000) >> 20)
-		cpu.regs[rd] = cpu.regs[rs1] + imm
+		imm := uint64((int64(int32(instruction & 0xfff00000))) >> 20)
+		//the shift amount is encoded in the lower 6 bits of imm for RV64I
+		shamt := uint32((imm & 0x3f))
 
-	//I-Type
+		switch funct3 {
+		case 0x0:
+			//addi add immediate
+			cpu.regs[rd] = cpu.regs[rs1] + imm
+		case 0x1:
+			//slli shift left logical immediate
+			cpu.regs[rd] = cpu.regs[rs1] << shamt
+		case 0x2:
+			//slti set if less than
+			if (int64(cpu.regs[rs1])) < (int64(imm)) {
+				cpu.regs[rd] = 1
+			} else {
+				cpu.regs[rd] = 0
+			}
+		case 0x3:
+			//sltiu set if less than unsigned
+			if cpu.regs[rs1] < imm {
+				cpu.regs[rd] = 1
+			} else {
+				cpu.regs[rd] = 0
+			}
+		case 0x4:
+			//xori exclusive or immediate
+			cpu.regs[rd] = cpu.regs[rs1] ^ imm
+		case 0x5:
+			switch funct7 {
+			case 0x00:
+				//srli shift right logical immediate.
+				cpu.regs[rd] = cpu.regs[rs1] + uint64(shamt)
+			case 0x10:
+				//srai shift right arithmetic immediate
+				cpu.regs[rd] = uint64(int64(cpu.regs[rs1]) + int64(shamt))
+			default:
+				return errors.New("Coud not execute funct7 of instruction 0x13")
+			}
+		case 0x6:
+			//ori or immediate
+			cpu.regs[rd] = cpu.regs[rs1] | imm
+
+		case 0x7:
+			//andi and immediate
+			cpu.regs[rd] = cpu.regs[rs1] & imm
+		default:
+			return errors.New("Could not execute funct3 of instruction 0x13")
+
+		}
+		//I-Type
 	case 0x33:
 		//add
 		cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2]
