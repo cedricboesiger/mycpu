@@ -360,6 +360,9 @@ func Execute(instruction uint64) error {
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x33")
 		}
+	case 0x37:
+		//lui
+		cpu.regs[rd] = uint64(int64(int32((instruction & 0xfffff000))))
 	default:
 		return errors.New("Could not execute instruction. Function not yet implementd")
 
