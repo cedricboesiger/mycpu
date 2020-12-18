@@ -286,6 +286,77 @@ func Execute(instruction uint64) error {
 
 				return errors.New("Could not execute funct7 of funct3 of 0x1 instruction 0x33")
 			}
+		case 0x2:
+			switch funct7 {
+			case 0x00:
+				//slt
+				if int64(cpu.regs[rs1]) < int64(cpu.regs[rs2]) {
+					cpu.regs[rd] = 1
+				} else {
+					cpu.regs[rd] = 0
+				}
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x2 instruction 0x33")
+
+			}
+		case 0x3:
+			switch funct7 {
+			case 0x00:
+				//sltu
+				if cpu.regs[rs1] < cpu.regs[rs2] {
+					cpu.regs[rd] = 1
+				} else {
+					cpu.regs[rd] = 0
+				}
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x3 instruction 0x33")
+
+			}
+		case 0x4:
+			switch funct7 {
+			case 0x00:
+				//xor
+				cpu.regs[rd] = cpu.regs[rs1] ^ cpu.regs[rs2]
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x4 instruction 0x33")
+
+			}
+		case 0x5:
+			switch funct7 {
+			case 0x00:
+				//srl
+				cpu.regs[rd] = cpu.regs[rs1] >> (shamt)
+			case 0x20:
+				//sra
+				cpu.regs[rd] = uint64(int64(cpu.regs[rs1]) >> (shamt))
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x5 instruction 0x33")
+
+			}
+		case 0x6:
+			switch funct7 {
+			case 0x00:
+				//or
+				cpu.regs[rd] = cpu.regs[rs1] | cpu.regs[rs2]
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x6 instruction 0x33")
+
+			}
+		case 0x7:
+			switch funct7 {
+			case 0x00:
+				//and
+				cpu.regs[rd] = cpu.regs[rs1] & cpu.regs[rs2]
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x7 instruction 0x33")
+
+			}
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x33")
 		}
