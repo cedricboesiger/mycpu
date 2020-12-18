@@ -24,13 +24,16 @@ var prglength uint64
 
 //Initialize the cpu
 func Initialize(binary []uint8) {
+	if debug {
+		fmt.Println("CPU Initialize")
+	}
 	prglength = uint64(len(binary))
 	//	var ram bus.Device
 	cpu.ram = &ram.RAM{}
 
 	//The stack pointer
-	cpu.regs[2] = bus.MemoryBase + ram.MemorySize
-	cpu.pc = bus.MemoryBase
+	cpu.regs[2] = ram.MemorySize
+	cpu.pc = 0
 
 	if debug {
 		fmt.Println("CPU Store Program to Memory")
@@ -40,7 +43,7 @@ func Initialize(binary []uint8) {
 		if debug {
 			fmt.Println("CPU Store index ", i)
 		}
-		err := cpu.ram.Store(uint64(i)+bus.MemoryBase, 8, uint64(binary[i]))
+		err := cpu.ram.Store(uint64(i), 8, uint64(binary[i]))
 		if err != nil {
 			fmt.Println("PANIC: could not store memory")
 			break
@@ -72,7 +75,7 @@ func GetPC() uint64 {
 
 //IncPC used for jump instructions
 func IncPC() {
-	if (cpu.pc - bus.MemoryBase) >= prglength {
+	if (cpu.pc) >= prglength {
 		cpu.pc = 0
 	} else {
 		cpu.pc += 4
@@ -117,9 +120,6 @@ func Execute(instruction uint64) error {
 			//lb load byte
 			val, _ := cpu.ram.Load(addr, 8)
 			cpu.regs[rd] = uint64(int64(int8((val))))
-			if debug {
-				fmt.Println("CPU DEBUG lb rd, regs[rd], value", val)
-			}
 		case 0x1:
 			//lh load half word
 			val, _ := cpu.ram.Load(addr, 16)
@@ -141,7 +141,7 @@ func Execute(instruction uint64) error {
 			val, _ := cpu.ram.Load(addr, 16)
 			cpu.regs[rd] = val
 		case 0x6:
-			//lwh load word unsigned
+			//lwu load word unsigned
 			val, _ := cpu.ram.Load(addr, 32)
 			cpu.regs[rd] = val
 		case 0x7:
@@ -204,9 +204,6 @@ func Execute(instruction uint64) error {
 			return errors.New("Could not execute funct3 of instruction 0x13")
 
 		}
-	case 0x33:
-		//add
-		cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2]
 	case 0x17:
 		// U-Type
 		//imm[31:12]
@@ -241,6 +238,30 @@ func Execute(instruction uint64) error {
 			return errors.New("Could not execute funct3 of instruction 0x1b")
 
 		}
+	case 0x23:
+		// S-Type
+		// imm[11:5]|4:0], inst[31:24|11:7]
+		imm := uint64((int64(int32(instruction & 0xfe000000)))) | ((instruction >> 7) & 0x1f)
+		addr := cpu.regs[rs1] + imm // golang respects interger overflow on uint, see https://golang.org/ref/spec#Integer_overflow
+		switch funct3 {
+		case 0x0:
+			//sb
+			cpu.ram.Store(addr, 8, cpu.regs[rs2])
+		case 0x1:
+			//sh
+			cpu.ram.Store(addr, 16, cpu.regs[rs2])
+		case 0x2:
+			//sw
+			cpu.ram.Store(addr, 32, cpu.regs[rs2])
+		case 0x3:
+			//sd
+			cpu.ram.Store(addr, 64, cpu.regs[rs2])
+		default:
+			return errors.New("Could not execute funct3 of instruction 0x23")
+		}
+	case 0x33:
+		//add
+		cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2]
 	default:
 		return errors.New("Could not execute instruction. Function not yet implementd")
 
