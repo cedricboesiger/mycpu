@@ -260,8 +260,35 @@ func Execute(instruction uint64) error {
 			return errors.New("Could not execute funct3 of instruction 0x23")
 		}
 	case 0x33:
-		//add
-		cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2]
+		shamt := uint32(uint64(cpu.regs[rs2] & 0x3f))
+		switch funct3 {
+		case 0x0:
+			switch funct7 {
+			case 0x00:
+				//add
+				cpu.regs[rd] = cpu.regs[rs1] + cpu.regs[rs2]
+			case 0x01:
+				//mul
+				cpu.regs[rd] = cpu.regs[rs1] * cpu.regs[rs2]
+			case 0x02:
+				//sub
+				cpu.regs[rd] = cpu.regs[rs1] - cpu.regs[rs2]
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 0x0 of instruction 0x33")
+			}
+		case 0x1:
+			switch funct7 {
+			case 0x00:
+				//sll
+				cpu.regs[rd] = cpu.regs[rs1] << (shamt)
+			default:
+
+				return errors.New("Could not execute funct7 of funct3 of 0x1 instruction 0x33")
+			}
+		default:
+			return errors.New("Could not execute funct3 of instruction 0x33")
+		}
 	default:
 		return errors.New("Could not execute instruction. Function not yet implementd")
 
