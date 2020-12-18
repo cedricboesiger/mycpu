@@ -6,7 +6,7 @@ import (
 	"rvsim/bus"
 )
 
-const debug bool = true
+const debug bool = false
 
 //MemorySize defines the  memory size for the cpu
 const MemorySize uint64 = 1024 * 1024 * 128

@@ -2,7 +2,7 @@ DIR := test
 SRCS := $(wildcard $(DIR)/*/*.s)
 TSTS := $(wildcard $(DIR)/*/*.go)
 OBJS := $(patsubst $(DIR)/%.s, $(DIR)/%.bin,$(SRCS))
-insttest: $(OBJS)
+insttests: $(OBJS)
 %.bin: %.s 
 	riscv64-unknown-elf-gcc -Wl,-Ttext=0x0 -nostdlib -o $*.out $<
 	riscv64-unknown-elf-objcopy -O binary $*.out $@

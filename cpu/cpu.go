@@ -7,7 +7,7 @@ import (
 	"rvsim/ram"
 )
 
-const debug bool = false
+const debug bool = true
 
 //Register holds all registers of the cpu
 type register struct {
@@ -117,6 +117,9 @@ func Execute(instruction uint64) error {
 			//lb load byte
 			val, _ := cpu.ram.Load(addr, 8)
 			cpu.regs[rd] = uint64(int64(int8((val))))
+			if debug {
+				fmt.Println("CPU DEBUG lb rd, regs[rd], value", val)
+			}
 		case 0x1:
 			//lh load half word
 			val, _ := cpu.ram.Load(addr, 16)
