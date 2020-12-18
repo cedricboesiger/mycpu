@@ -2,3 +2,5 @@ Cargo.lock
 target
 add-addi
 add-addi.bin
+.bin
+.out
