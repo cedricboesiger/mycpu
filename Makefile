@@ -11,11 +11,23 @@ add-addi.bin: test/add-addi.s
 	riscv64-unknown-elf-gcc -Wl,-Ttext=0x0 -nostdlib -o test/add-addi test/add-addi.s
 	riscv64-unknown-elf-objcopy -O binary test/add-addi test/add-addi.bin
 
+fib.bin: test/fib/fib.c
+	riscv64-unknown-elf-gcc -o test/fib/fib.s -S test/fib/fib.c
+	riscv64-unknown-elf-gcc -Wl,-Ttext=0x0 -nostdlib -o test/fib/fib test/fib/fib.s
+	riscv64-unknown-elf-objcopy -O binary test/fib/fib test/fib/fib.bin
+
+
 testinst: 
 	$(foreach var, $(TSTS),go run $(var);)
+
+lint:
+	golangci-lint run -v
 
 clean:
 	rm -f test/add-addi
 	rm -f test/add-addi.bin
+	rm -f test/fib/fib.bin
+	rm -f test/fib/fib.s
+	rm -f test/fib/fib
 	rm -f $(DIR)/*/*.out
 	rm -f $(DIR)/*/*.bin

@@ -93,6 +93,7 @@ func Fetch() (uint64, error) {
 		fmt.Println("CPU DEBUG Fetch cpu.pc", cpu.pc)
 	}
 	value, err := cpu.ram.Load(cpu.pc, 32)
+
 	return value, err
 }
 
@@ -101,12 +102,16 @@ func Execute(instruction uint64) error {
 	//Simulte the zero register at x00
 	cpu.regs[0] = 0
 
-	opcode := instruction & 0x0000007f
-	rd := uint((instruction & 0x00000f80) >> 7)
-	rs1 := uint((instruction & 0x000f8000) >> 15)
-	rs2 := uint((instruction & 0x01f00000) >> 20)
-	funct3 := (instruction & 0x00007000) >> 12
-	funct7 := (instruction & 0xfe000000) >> 25
+	opcode := instruction & 0x7f
+	rd := uint((instruction >> 7) & 0x1f)
+	rs1 := uint((instruction >> 15) & 0x1f)
+	rs2 := uint((instruction >> 20) & 0x1f)
+	funct3 := (instruction >> 12) & 0x7
+	funct7 := (instruction >> 25) & 0x7f
+	if debug {
+		fmt.Printf("CPU DEBUG pc %d instruction %d opcode %d funct3 %d funct7 %d", cpu.pc, instruction, opcode, funct3, funct7)
+		fmt.Println()
+	}
 
 	switch opcode {
 	case 0x03:
@@ -202,7 +207,6 @@ func Execute(instruction uint64) error {
 			cpu.regs[rd] = cpu.regs[rs1] & imm
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x13")
-
 		}
 	case 0x17:
 		// U-Type
@@ -230,13 +234,11 @@ func Execute(instruction uint64) error {
 			case 0x20:
 				//sraiw shift right arithmetic word immediate
 				cpu.regs[rd] = uint64(int64(int32(cpu.regs[rs1] >> shamt)))
-
 			default:
 				return errors.New("Could not execute funct7 of instruction 0x1b")
 			}
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x1b")
-
 		}
 	case 0x23:
 		// S-Type
@@ -246,16 +248,28 @@ func Execute(instruction uint64) error {
 		switch funct3 {
 		case 0x0:
 			//sb
-			cpu.ram.Store(addr, 8, cpu.regs[rs2])
+			err := cpu.ram.Store(addr, 8, cpu.regs[rs2])
+			if err != nil {
+				return err
+			}
 		case 0x1:
 			//sh
-			cpu.ram.Store(addr, 16, cpu.regs[rs2])
+			err := cpu.ram.Store(addr, 16, cpu.regs[rs2])
+			if err != nil {
+				return err
+			}
 		case 0x2:
 			//sw
-			cpu.ram.Store(addr, 32, cpu.regs[rs2])
+			err := cpu.ram.Store(addr, 32, cpu.regs[rs2])
+			if err != nil {
+				return err
+			}
 		case 0x3:
 			//sd
-			cpu.ram.Store(addr, 64, cpu.regs[rs2])
+			err := cpu.ram.Store(addr, 64, cpu.regs[rs2])
+			if err != nil {
+				return err
+			}
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x23")
 		}
@@ -274,7 +288,6 @@ func Execute(instruction uint64) error {
 				//sub
 				cpu.regs[rd] = cpu.regs[rs1] - cpu.regs[rs2]
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 0x0 of instruction 0x33")
 			}
 		case 0x1:
@@ -283,7 +296,6 @@ func Execute(instruction uint64) error {
 				//sll
 				cpu.regs[rd] = cpu.regs[rs1] << (shamt)
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x1 instruction 0x33")
 			}
 		case 0x2:
@@ -296,9 +308,7 @@ func Execute(instruction uint64) error {
 					cpu.regs[rd] = 0
 				}
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x2 instruction 0x33")
-
 			}
 		case 0x3:
 			switch funct7 {
@@ -310,9 +320,7 @@ func Execute(instruction uint64) error {
 					cpu.regs[rd] = 0
 				}
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x3 instruction 0x33")
-
 			}
 		case 0x4:
 			switch funct7 {
@@ -320,9 +328,7 @@ func Execute(instruction uint64) error {
 				//xor
 				cpu.regs[rd] = cpu.regs[rs1] ^ cpu.regs[rs2]
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x4 instruction 0x33")
-
 			}
 		case 0x5:
 			switch funct7 {
@@ -333,9 +339,7 @@ func Execute(instruction uint64) error {
 				//sra
 				cpu.regs[rd] = uint64(int64(cpu.regs[rs1]) >> (shamt))
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x5 instruction 0x33")
-
 			}
 		case 0x6:
 			switch funct7 {
@@ -343,9 +347,7 @@ func Execute(instruction uint64) error {
 				//or
 				cpu.regs[rd] = cpu.regs[rs1] | cpu.regs[rs2]
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x6 instruction 0x33")
-
 			}
 		case 0x7:
 			switch funct7 {
@@ -353,9 +355,7 @@ func Execute(instruction uint64) error {
 				//and
 				cpu.regs[rd] = cpu.regs[rs1] & cpu.regs[rs2]
 			default:
-
 				return errors.New("Could not execute funct7 of funct3 of 0x7 instruction 0x33")
-
 			}
 		default:
 			return errors.New("Could not execute funct3 of instruction 0x33")
@@ -363,9 +363,98 @@ func Execute(instruction uint64) error {
 	case 0x37:
 		//lui
 		cpu.regs[rd] = uint64(int64(int32((instruction & 0xfffff000))))
+	case 0x3b:
+		shamt := uint32(cpu.regs[rs2] & 0x1f)
+		switch funct3 {
+		case 0x0:
+			switch funct7 {
+			case 0x00:
+				//addw
+				cpu.regs[rd] = uint64(int64(int32(cpu.regs[rs1] + cpu.regs[rs2])))
+			case 0x20:
+				//subw
+				cpu.regs[rd] = uint64(int32(cpu.regs[rs1] - cpu.regs[rs2]))
+			default:
+				return errors.New("Could not execute funct7 of funct3 of 0x0 instruction 0x3b")
+			}
+		case 0x1:
+			switch funct7 {
+			case 0x00:
+				//sllw
+				cpu.regs[rd] = uint64(int32(uint32(cpu.regs[rs1]) << (shamt)))
+			default:
+				return errors.New("Could not execute funct7 of funct3 of 0x1 instruction 0x3b")
+			}
+		case 0x5:
+			switch funct7 {
+			case 0x00:
+				//slrw
+				cpu.regs[rd] = uint64(int32(uint32(cpu.regs[rs1]) >> (shamt)))
+			case 0x20:
+				//sraw
+				cpu.regs[rd] = uint64(uint32(cpu.regs[rs1]) >> int32((shamt)))
+			default:
+				return errors.New("Could not execute funct7 of funct3 of 0x5 instruction 0x3b")
+			}
+		default:
+			return errors.New("Could not execute funct3 of instruction 0x3b")
+		}
+	case 0x63:
+		// B-Type
+		// imm[12|10:5|4:1|11]
+		imm := uint64((int64(int32(instruction&0x80000000)) >> 19)) | ((instruction & 0x80) << 4) | ((instruction >> 20) & 0x7e0) | ((instruction >> 7) & 0x1e)
+		switch funct3 {
+		case 0x0:
+			//beq
+			fmt.Printf("CPU BEQ rs1 %d rs2 %d", cpu.regs[rs1], cpu.regs[rs2])
+			fmt.Println()
+			if cpu.regs[rs1] == cpu.regs[rs2] {
+				cpu.pc = cpu.pc + imm - 4
+			}
+		case 0x1:
+			//bne
+			if cpu.regs[rs1] != cpu.regs[rs2] {
+				cpu.pc = cpu.pc + imm - 4
+			}
+		case 0x4:
+			//blt
+			if int64(cpu.regs[rs1]) < int64(cpu.regs[rs2]) {
+				cpu.pc = cpu.pc + imm - 4
+			}
+		case 0x5:
+			//bge
+			if int64(cpu.regs[rs1]) >= int64(cpu.regs[rs2]) {
+				cpu.pc = cpu.pc + imm - 4
+			}
+		case 0x6:
+			//bltu
+			if cpu.regs[rs1] < cpu.regs[rs2] {
+				cpu.pc = cpu.pc + imm - 4
+			}
+		case 0x7:
+			//bgeu
+			if cpu.regs[rs1] >= cpu.regs[rs2] {
+				cpu.pc = cpu.pc + imm - 4
+			}
+		default:
+			return errors.New("Could not execute funct3 of instruction 0x63")
+		}
+	case 0x67:
+		//jal
+		// Don'd add 4 to t because pc already moved
+		t := cpu.pc
+		imm := uint64(int64(int32((instruction & 0xfff00000))) >> 20)
+		cpu.pc = cpu.regs[rs1] + imm
+		cpu.regs[rd] = t
+	case 0x6f:
+		//jal
+		cpu.regs[rd] = cpu.pc
+
+		// imm[20|10:1|11|19:12]
+		imm := uint64((int64(int32(instruction&0x80000000)))>>11) | (instruction & 0xff000) | ((instruction >> 9) & 0x800) | ((instruction >> 20) & 0x7fe)
+		cpu.pc = cpu.pc + imm - 4
 	default:
 		return errors.New("Could not execute instruction. Function not yet implementd")
-
 	}
 	return nil
 	//Decode Opcode etc.

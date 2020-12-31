@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-const debug bool = true
+const debug bool = false
 
 func main() {
 

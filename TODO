@@ -1,2 +1,4 @@
 Implement automated Testing into Make files
 Store8 does work. Refactor MemoryBase + MemorySize
+Vermutung ist das store32 oder load32 noch nicht richtig funktioniert. Test: der Wert 10 (fib(10) wird irgendwo geschreiben. Memory Addresse finden und verifizieren ob diese auch wieder als 10 gelesen wird.
+

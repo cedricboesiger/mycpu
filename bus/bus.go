@@ -1,6 +1,6 @@
 package bus
 
-const debug bool = false
+//const debug bool = false
 
 //Device for the bus need to implement load and store
 type Device interface {
