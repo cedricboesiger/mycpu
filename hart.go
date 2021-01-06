@@ -40,12 +40,13 @@ func main() {
 		}
 
 		cpu.IncPC()
+
 		if debug {
 			fmt.Println("HART cpu.pc, ", cpu.GetPC())
 		}
 
 		//Workaround to abort loop
-		if cpu.GetPC() == 0 {
+		if cpu.GetPC() == 4 && cycle > 0 {
 			if debug {
 				fmt.Println("HLT DUE TO END OF PROGAM")
 			}

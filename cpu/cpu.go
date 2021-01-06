@@ -7,7 +7,7 @@ import (
 	"rvsim/ram"
 )
 
-const debug bool = true
+const debug bool = false
 
 //Register holds all registers of the cpu
 type register struct {
@@ -89,9 +89,6 @@ func SetPC(newPC uint64) {
 
 //Fetch cycle
 func Fetch() (uint64, error) {
-	if debug {
-		fmt.Println("CPU DEBUG Fetch cpu.pc", cpu.pc)
-	}
 	value, err := cpu.ram.Load(cpu.pc, 32)
 
 	return value, err
@@ -245,8 +242,6 @@ func Execute(instruction uint64) error {
 		// imm[11:5]|4:0], inst[31:24|11:7]
 		imm := uint64((int64(int32(instruction&0xfe000000)))>>20) | ((instruction >> 7) & 0x1f)
 		addr := cpu.regs[rs1] + imm // golang respects interger overflow on uint, see https://golang.org/ref/spec#Integer_overflow
-		fmt.Printf("DEBUGDEBUG instruction %d addr %d imm %d", instruction, addr, imm)
-		fmt.Println()
 		switch funct3 {
 		case 0x0:
 			//sb
@@ -408,8 +403,10 @@ func Execute(instruction uint64) error {
 		switch funct3 {
 		case 0x0:
 			//beq
-			fmt.Printf("CPU BEQ rs1 %d rs2 %d", cpu.regs[rs1], cpu.regs[rs2])
-			fmt.Println()
+			if debug {
+				fmt.Printf("DEBUG BEQ rs1 %d rs2 %d cpu %d imm %d", cpu.regs[rs1], cpu.regs[rs2], cpu.pc, imm)
+				fmt.Println()
+			}
 			if cpu.regs[rs1] == cpu.regs[rs2] {
 				cpu.pc = cpu.pc + imm - 4
 			}
