@@ -243,8 +243,10 @@ func Execute(instruction uint64) error {
 	case 0x23:
 		// S-Type
 		// imm[11:5]|4:0], inst[31:24|11:7]
-		imm := uint64((int64(int32(instruction & 0xfe000000)))) | ((instruction >> 7) & 0x1f)
+		imm := uint64((int64(int32(instruction&0xfe000000)))>>20) | ((instruction >> 7) & 0x1f)
 		addr := cpu.regs[rs1] + imm // golang respects interger overflow on uint, see https://golang.org/ref/spec#Integer_overflow
+		fmt.Printf("DEBUGDEBUG instruction %d addr %d imm %d", instruction, addr, imm)
+		fmt.Println()
 		switch funct3 {
 		case 0x0:
 			//sb

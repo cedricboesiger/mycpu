@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const debug bool = false
+const debug bool = true
 
 //MemorySize defines the  memory size for the cpu
 const MemorySize uint64 = 1024 * 1024 * 128
