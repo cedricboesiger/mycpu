@@ -106,7 +106,7 @@ func Execute(instruction uint64) error {
 	funct3 := (instruction >> 12) & 0x7
 	funct7 := (instruction >> 25) & 0x7f
 	if debug {
-		fmt.Printf("CPU DEBUG pc %d instruction %d opcode %d funct3 %d funct7 %d", cpu.pc, instruction, opcode, funct3, funct7)
+		fmt.Printf("CPU DEBUG pc %x instruction %x opcode %x funct3 %x funct7 %x", cpu.pc, instruction, opcode, funct3, funct7)
 		fmt.Println()
 	}
 
@@ -443,7 +443,7 @@ func Execute(instruction uint64) error {
 		// Don'd add 4 to t because pc already moved
 		t := cpu.pc
 		imm := uint64(int64(int32((instruction & 0xfff00000))) >> 20)
-		cpu.pc = cpu.regs[rs1] + imm
+		cpu.pc = (cpu.regs[rs1] + imm)
 		cpu.regs[rd] = t
 	case 0x6f:
 		//jal
